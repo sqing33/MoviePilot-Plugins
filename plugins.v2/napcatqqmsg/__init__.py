@@ -89,7 +89,7 @@ class NapCatQQMsg(_PluginBase):
                             'props': {
                                 'model': 'forward_url',
                                 'label': '转发URL地址',
-                                'placeholder': '例如：http://127.0.0.1:8080/send'
+                                'placeholder': 'http://192.168.1.100:6098/send_private_msg'
                             }
                         }]
                     }, {
@@ -103,7 +103,8 @@ class NapCatQQMsg(_PluginBase):
                             'component': 'VTextField',
                             'props': {
                                 'model': 'user_id',
-                                'label': '用户ID (user_id)'
+                                'label': '用户QQ (user_id)',
+                                'placeholder': '接收消息的QQ号码'
                             }
                         }]
                     }]
