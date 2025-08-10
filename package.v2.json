@@ -1,4 +1,16 @@
 {
+  "NapCatQQMsg": {
+    "name": "NapCat-QQ消息通知",
+    "description": "通过NapCat将消息推送到QQ。",
+    "labels": "消息通知",
+    "version": "1.0",
+    "icon": "https://avatars.githubusercontent.com/u/165024194?s=48&v=4",
+    "author": "sqing",
+    "level": 2,
+    "history": {
+      "v1.0": "将通知事件格式化后转发给NapCat，通过qq小号将消息推送给qq大号。"
+    }
+  },
   "SiteStatistic": {
     "name": "站点数据统计",
     "description": "站点统计数据图表。",
