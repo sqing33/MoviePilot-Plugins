@@ -13,7 +13,7 @@ from app.utils.http import RequestUtils
 class NapCatQQMsg(_PluginBase):
     plugin_name = "NapCat-QQ消息推送"
     plugin_desc = "将通知事件格式化后转发给NapCat，通过qq小号将消息推送给qq大号。"
-    plugin_icon = "https://avatars.githubusercontent.com/u/165024194?s=48&v=4"
+    plugin_icon = "NapCatQQMsg_A.png"
     plugin_version = "1.0"
     plugin_author = "sqing"
     author_url = "https://github.com/sqing33"
