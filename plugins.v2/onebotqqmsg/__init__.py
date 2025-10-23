@@ -10,19 +10,20 @@ from app.schemas.types import EventType
 from app.utils.http import RequestUtils
 
 
-class NapCatQQMsg(_PluginBase):
-    plugin_name = "NapCat-QQ消息推送"
-    plugin_desc = "将通知事件格式化后转发给NapCat，通过qq小号将消息推送给qq大号。"
-    plugin_icon = "NapCatQQMsg_A.png"
+class OneBotQQMsg(_PluginBase):
+    plugin_name = "OneBot-QQ消息推送"
+    plugin_desc = "将通知事件格式化后使用OneBot协议通过qq小号将消息推送给qq大号。"
+    plugin_icon = "OneBotQQMsg_A.png"
     plugin_version = "1.0"
     plugin_author = "sqing"
     author_url = "https://github.com/sqing33"
-    plugin_config_prefix = "napcatqqmsg_"
+    plugin_config_prefix = "onebotqqmsg_"
     plugin_order = 14
     auth_level = 1
 
     _forward_url = None
     _user_id = None
+    _access_token = None  # <--- 新增：用于存储 Access Token
     _enabled = False
 
     _last_forwarded_messages: Dict[str, float] = {}
@@ -36,6 +37,8 @@ class NapCatQQMsg(_PluginBase):
             self._enabled = config.get("enabled")
             self._forward_url = config.get("forward_url")
             self._user_id = config.get('user_id')
+            self._access_token = config.get('access_token')  # <--- 新增：从配置中读取 Token
+
         logger.info(
             f"[{self.plugin_name}] 插件初始化。启用状态: {self._enabled}, URL: {self._forward_url}"
         )
@@ -51,7 +54,7 @@ class NapCatQQMsg(_PluginBase):
         pass
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
-        # ... (您的 get_form 代码) ...
+        # 在表单定义中增加 Token 输入框
         return [{
             'component':
             'VForm',
@@ -89,7 +92,7 @@ class NapCatQQMsg(_PluginBase):
                             'props': {
                                 'model': 'forward_url',
                                 'label': '转发URL地址',
-                                'placeholder': 'http://192.168.1.100:6098/send_private_msg'
+                                'placeholder': 'http://127.0.0.1:3000/send_private_msg'
                             }
                         }]
                     }, {
@@ -109,11 +112,29 @@ class NapCatQQMsg(_PluginBase):
                         }]
                     }]
                 },
+                # --- 新增的 Token 输入框 ---
+                {
+                    'component': 'VRow',
+                    'content': [{
+                        'component': 'VCol',
+                        'props': {'cols': 12},
+                        'content': [{
+                            'component': 'VTextField',
+                            'props': {
+                                'model': 'access_token',
+                                'label': '访问令牌 (Access Token)',
+                                'placeholder': '如果需要认证，请在此输入 Token'
+                            }
+                        }]
+                    }]
+                }
+                # --- 新增结束 ---
             ]
         }], {
             "enabled": False,
             "forward_url": "",
-            "user_id": ""
+            "user_id": "",
+            "access_token": ""  # <--- 新增：为 Token 提供默认值
         }
 
     def get_page(self) -> List[dict]:
@@ -136,7 +157,8 @@ class NapCatQQMsg(_PluginBase):
 
         if not title and not text:
             return
-
+        
+        # --- 去重逻辑 (保持不变) ---
         current_time = time.time()
         expired_keys = [
             key for key, ts in self._last_forwarded_messages.items()
@@ -162,21 +184,26 @@ class NapCatQQMsg(_PluginBase):
             formatted_message = f"{title}\n\n{text}" if title and text else title or text
             payload = {
                 "user_id": str(self._user_id),
-                "message": [{
-                    "type": "text",
-                    "data": {
-                        "text": formatted_message
-                    }
-                }]
+                "message": formatted_message  # OneBot v11可以直接发送字符串
             }
             logger.debug(
                 f"[{self.plugin_name}] 发送的 Payload: {json.dumps(payload, ensure_ascii=False, indent=2)}"
             )
 
+            # --- 修改部分：构建请求头并发送 ---
+            headers = {}
+            if self._access_token:
+                # 如果配置了 Token，则构建标准的 Bearer Token 请求头
+                headers["Authorization"] = f"Bearer {self._access_token}"
+                logger.debug(f"[{self.plugin_name}] 使用 Access Token 进行认证。")
+            
             logger.info(
                 f"[{self.plugin_name}] 正在发送 POST 请求至: {self._forward_url} ...")
+            
+            # 在请求中加入 headers
             ret = RequestUtils(content_type="application/json").post_res(
-                self._forward_url, json=payload)
+                self._forward_url, json=payload, headers=headers)
+            # --- 修改结束 ---
 
             if ret and ret.status_code == 200:
                 logger.info(
