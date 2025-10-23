@@ -17,7 +17,7 @@ class OneBotQQMsg(_PluginBase):
     # 插件描述
     plugin_desc = "使用 LLOneBot (OneBot v11) 发送 QQ 私聊消息通知。"
     # 插件图标
-    plugin_icon = "https://raw.githubusercontent.com/botuniverse/onebot-11/main/onebot.png"
+    plugin_icon = "onebot.png"
     # 插件版本
     plugin_version = "1.0"
     # 插件作者
