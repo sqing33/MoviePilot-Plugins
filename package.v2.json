@@ -1,14 +1,14 @@
 {
-  "NapCatQQMsg": {
-    "name": "NapCat-QQ消息通知",
-    "description": "通过NapCat将消息推送到QQ。",
+  "OneBotQQMsg": {
+    "name": "OneBot-QQ消息通知",
+    "description": "通过OneBot将消息推送到QQ。",
     "labels": "消息通知",
     "version": "1.0",
     "icon": "https://avatars.githubusercontent.com/u/165024194?s=48&v=4",
     "author": "sqing",
     "level": 2,
     "history": {
-      "v1.0": "将通知事件格式化后转发给NapCat，通过qq小号将消息推送给qq大号。"
+      "v1.0": "将通知事件格式化后试用OneBot协议通过qq小号将消息推送给qq大号。"
     }
   },
   "SiteStatistic": {
