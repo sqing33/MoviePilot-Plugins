@@ -158,7 +158,7 @@ class OneBotQQMsg(_PluginBase):
         if not title and not text:
             return
         
-        # --- 去重逻辑 (保持不变) ---
+        # 去重逻辑 (保持不变)
         current_time = time.time()
         expired_keys = [
             key for key, ts in self._last_forwarded_messages.items()
@@ -168,42 +168,47 @@ class OneBotQQMsg(_PluginBase):
             del self._last_forwarded_messages[key]
 
         message_fingerprint = f"{title}|{text}"
-
         if message_fingerprint in self._last_forwarded_messages:
             logger.debug(
                 f"[{self.plugin_name}] 在 {self._dedup_window_seconds}s 内检测到重复消息，已跳过。Title: '{title}'"
             )
             return
-
         self._last_forwarded_messages[message_fingerprint] = current_time
 
         logger.info(f"[{self.plugin_name}] 接收到新通知，准备转发: Title='{title}'")
 
         try:
-            # 构建请求体
+            # --- 核心修改部分 ---
+            try:
+                # 将 user_id 转换为整数
+                user_id_int = int(self._user_id)
+            except (ValueError, TypeError):
+                logger.error(f"[{self.plugin_name}] 配置的 user_id '{self._user_id}' 不是有效的数字，已停止本次转发。")
+                return
+
+            # 构建请求体 (Payload)
             formatted_message = f"{title}\n\n{text}" if title and text else title or text
             payload = {
-                "user_id": str(self._user_id),
-                "message": formatted_message  # OneBot v11可以直接发送字符串
+                "user_id": user_id_int,  # <--- 使用整数类型的 user_id
+                "message": formatted_message
             }
+            # --- 修改结束 ---
+            
             logger.debug(
                 f"[{self.plugin_name}] 发送的 Payload: {json.dumps(payload, ensure_ascii=False, indent=2)}"
             )
 
-            # --- 修改部分：构建请求头并发送 ---
+            # 构建请求头 (Headers)
             headers = {}
             if self._access_token:
-                # 如果配置了 Token，则构建标准的 Bearer Token 请求头
                 headers["Authorization"] = f"Bearer {self._access_token}"
-                logger.debug(f"[{self.plugin_name}] 使用 Access Token 进行认证。")
             
             logger.info(
                 f"[{self.plugin_name}] 正在发送 POST 请求至: {self._forward_url} ...")
             
-            # 在请求中加入 headers
+            # 发送请求
             ret = RequestUtils(content_type="application/json").post_res(
                 self._forward_url, json=payload, headers=headers)
-            # --- 修改结束 ---
 
             if ret and ret.status_code == 200:
                 logger.info(
