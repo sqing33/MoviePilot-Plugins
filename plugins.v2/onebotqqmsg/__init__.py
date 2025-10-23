@@ -244,10 +244,10 @@ class OneBotQQMsg(_PluginBase):
                     continue
 
                 # 格式化最终发送的消息
-                # 如果有标题，格式为【标题】\n内容，否则直接为内容
+                # 如果有标题，格式为标题\n内容，否则直接为内容
                 final_message = ""
                 if title:
-                    final_message += f"【{title}】\n"
+                    final_message += f"{title}\n"
                 final_message += text if text else ""
                 
                 if not final_message.strip():
